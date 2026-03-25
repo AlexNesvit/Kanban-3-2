@@ -1,4 +1,4 @@
-# Visiplus - Kanban Node.js Server
+# Kanban Node.js Server
 
 Serveur Express avec MongoDB pour application Kanban.
 
@@ -51,7 +51,7 @@ npm install
 ```env
 NODE_ENV=development
 PORT=3000
-MONGODB_URI=mongodb://localhost:27017/visiplus
+MONGODB_URI=mongodb://localhost:27017/kanban
 JWT_SECRET=your-super-secret-jwt-key-at-least-32-characters-long
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=*
