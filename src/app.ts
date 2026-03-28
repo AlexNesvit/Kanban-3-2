@@ -4,6 +4,10 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import routes from './routes/index.js';
 import { errorHandler } from './middlewares/error.middleware.js';
+import {
+  securityHeaders,
+  apiRateLimiter,
+} from './middlewares/security.middleware.js';
 
 /**
  * Creates and configures the Express application.
@@ -24,6 +28,7 @@ export function createApp(): Express {
   const app = express();
 
   // Middleware
+  app.use(securityHeaders);
   app.use(cors({ origin: env.CORS_ORIGIN }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -40,6 +45,7 @@ export function createApp(): Express {
   });
 
   // API routes
+  app.use('/api', apiRateLimiter);
   app.use('/api', routes);
 
   // Error handler (must be last)
@@ -47,4 +53,3 @@ export function createApp(): Express {
 
   return app;
 }
-
