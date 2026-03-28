@@ -110,3 +110,7 @@ npm test -- --watch
 Les tests utilisent **MongoDB Memory Server** (une instance MongoDB en mémoire). Aucune installation de MongoDB n'est nécessaire pour exécuter les tests. Voir `tests/README.md` pour plus de détails.
 
 Le serveur utilise TypeScript avec ES modules. En développement, utilisez `tsx` pour le hot reload automatique.
+
+## Déploiement
+
+Les instructions de conteneurisation et de lancement en production sont disponibles dans `GUIDE_DEPLOIEMENT.md`.
