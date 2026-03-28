@@ -1,53 +1,45 @@
-# Kanban Node.js Server
+# Étude de cas KANBAN – Bloc 3 (CDA)
 
-Serveur Express avec MongoDB pour application Kanban.
+## 1. Présentation du projet et contexte
+Ce dépôt contient la mise en production progressive d’une API Kanban Node.js/TypeScript (Express + MongoDB) dans le cadre de l’épreuve **Bloc 3 – Préparer le déploiement d’une application sécurisée**.
 
-## Structure du projet
+Objectif global : livrer une API fiable, testée, conteneurisable, sécurisée et documentée pour un redémarrage autonome par un tiers.
 
-```
-├── src/
-│   ├── main.ts                 # Entrée principale (création du serveur)
-│   ├── server.ts               # Configuration Express
-│   ├── app.ts                  # Exporte Express app (pour tests)
-│   ├── config/
-│   │   ├── env.ts              # Chargement et validation des variables d'environnement
-│   │   ├── db.ts               # Connexion base de données (Mongoose)
-│   │   └── logger.ts           # Logger (Pino)
-│   ├── models/
-│   │   ├── OF.ts               # Modèle Ordre de Fabrication
-│   │   ├── Column.ts           # Modèle Colonne
-│   │   └── User.ts             # Modèle Utilisateur
-│   ├── routes/
-│   │   ├── index.ts            # Regroupe les routes (OF, Columns, Auth)
-│   │   ├── ofs.routes.ts
-│   │   ├── columns.routes.ts
-│   │   └── auth.routes.ts
-│   ├── controllers/
-│   │   ├── ofs.controller.ts   # Appelle les services (move, create, delete)
-│   │   └── columns.controller.ts
-│   └── middlewares/
-│       ├── auth.middleware.ts  # Vérification JWT
-│       ├── error.middleware.ts # Gestion globale des erreurs
-│       └── validate.middleware.ts # Validation Zod
-├── vitest.config.ts
-├── tsconfig.json
-└── package.json
+## 2. Synthèse des 7 étapes réalisées
+1. **Analyse technique** : structure, risques et priorités documentés dans `ANALYSE_EXISTANT.md`.
+2. **Tests d’intégration** : tests Vitest/Supertest pour `GET /api/columns` et `POST /api/columns` dans `tests/columns.routes.ts`.
+3. **Conteneurisation** : image de production via `Dockerfile` (+ `docker-compose.yml` optionnel).
+4. **CI/CD** : stratégie pipeline (push/PR/release, tests/build/déploiement, secrets) dans `CI_CD_STRATEGIE.md`.
+5. **Documentation déploiement** : procédure locale + Docker + mise à jour dans `DEPLOYMENT_GUIDE.md`.
+6. **Sécurisation** : middleware actif `helmet` + `express-rate-limit` dans `src/middlewares/security.middleware.ts`, branché dans `src/app.ts`.
+7. **Synthèse livraison** : dépôt structuré, livrables centralisés et README final.
+
+## 3. Structure du dépôt
+```text
+src/
+  config/          # env, db, logger
+  controllers/     # logique routes OF/Column
+  middlewares/     # auth, validation, erreurs, sécurité
+  models/          # User, Column, OF
+  routes/          # auth/ofs/columns
+tests/             # tests Vitest + Supertest
+Dockerfile
+docker-compose.yml
+README.md
+ANALYSE_EXISTANT.md
+CI_CD_STRATEGIE.md
+DEPLOYMENT_GUIDE.md
+NOTE_SECURITE.md
 ```
 
-## Prérequis
+## 4. Installation et exécution
+### Prérequis
+- Node.js **20**
+- npm
+- MongoDB (si exécution locale sans Docker)
+- Docker + Docker Compose (si exécution conteneurisée)
 
-- Node.js (version 18 ou supérieure)
-- MongoDB (local ou Atlas)
-- npm ou yarn
-
-## Installation
-
-1. Installer les dépendances :
-```bash
-npm install
-```
-
-2. Créer un fichier `.env` à la racine du projet :
+### Variables d’environnement (`.env`)
 ```env
 NODE_ENV=development
 PORT=3000
@@ -57,60 +49,70 @@ JWT_EXPIRES_IN=7d
 CORS_ORIGIN=*
 ```
 
-3. Démarrer le serveur en mode développement :
+### Lancement local
 ```bash
+npm ci
 npm run dev
 ```
 
-## Scripts disponibles
-
-- `npm run dev` - Démarre le serveur en mode développement avec hot reload (tsx watch)
-- `npm run build` - Compile TypeScript en JavaScript
-- `npm start` - Démarre le serveur en production (nécessite `npm run build` d'abord)
-- `npm test` - Lance les tests avec Vitest
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/auth/register` - Créer un compte utilisateur
-- `POST /api/auth/login` - Se connecter
-
-### Columns
-
-- `GET /api/columns` - Lister toutes les colonnes
-- `GET /api/columns/:id` - Obtenir une colonne
-- `POST /api/columns` - Créer une colonne (authentification requise)
-- `PUT /api/columns/:id` - Mettre à jour une colonne (authentification requise)
-- `DELETE /api/columns/:id` - Supprimer une colonne (authentification requise)
-
-### OFs (Ordres de Fabrication)
-
-- `GET /api/ofs` - Lister tous les OFs (optionnel: `?columnId=xxx`)
-- `GET /api/ofs/:id` - Obtenir un OF (authentification requise)
-- `POST /api/ofs` - Créer un OF (authentification requise)
-- `PUT /api/ofs/:id` - Mettre à jour un OF (authentification requise)
-- `PATCH /api/ofs/:id/move` - Déplacer un OF (authentification requise)
-- `DELETE /api/ofs/:id` - Supprimer un OF (authentification requise)
-
-### Health Check
-
-- `GET /health` - Vérifier l'état du serveur
-
-### Exécution des tests
-
+### Build production
 ```bash
-# Exécuter tous les tests
-npm test
-
-# Exécuter en mode watch
-npm test -- --watch
+npm run build
+npm start
 ```
 
-Les tests utilisent **MongoDB Memory Server** (une instance MongoDB en mémoire). Aucune installation de MongoDB n'est nécessaire pour exécuter les tests. Voir `tests/README.md` pour plus de détails.
+### Lancement Docker
+```bash
+docker build -t kanban-api:latest .
+docker run --rm -p 3000:3000 --env-file .env kanban-api:latest
+```
 
-Le serveur utilise TypeScript avec ES modules. En développement, utilisez `tsx` pour le hot reload automatique.
+### Lancement Docker Compose (API + MongoDB)
+```bash
+docker compose up -d --build
+```
 
-## Déploiement
+Santé API :
+```bash
+curl http://localhost:3000/health
+```
 
-Les instructions de conteneurisation et de lancement en production sont disponibles dans `GUIDE_DEPLOIEMENT.md`.
+## 5. Tests et qualité
+```bash
+npm test
+npm test -- --watch
+npm run test:coverage
+```
+
+Les tests d’intégration utilisent MongoDB Memory Server.
+
+## 6. Choix techniques et mesures de sécurité
+### Choix techniques
+- **TypeScript + Express 5** pour robustesse et maintenabilité.
+- **Mongoose** pour la couche d’accès MongoDB.
+- **Vitest + Supertest** pour les tests d’intégration API.
+- **Docker multi-stage** pour une image production plus propre.
+
+### Mesures de sécurité
+- Authentification JWT sur routes métiers (`/api/columns`, `/api/ofs`).
+- Validation d’entrée avec Zod.
+- Middleware sécurité actif :
+  - `helmet` (durcissement des en-têtes HTTP)
+  - `express-rate-limit` (limitation du débit sur `/api`)
+- Vérification fonctionnelle : route protégée retourne `401` sans token.
+
+Détails : `NOTE_SECURITE.md`.
+
+## 7. Livrables du dépôt
+- `ANALYSE_EXISTANT.md`
+- `tests/columns.routes.ts`
+- `Dockerfile`
+- `docker-compose.yml`
+- `CI_CD_STRATEGIE.md`
+- `DEPLOYMENT_GUIDE.md`
+- `NOTE_SECURITE.md`
+- `README.md` (ce fichier)
+
+
+## 8. Remarque dépôt Git
+Le dossier `node_modules/` n’est pas versionné (géré par `.gitignore`).
